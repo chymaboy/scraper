@@ -1,4 +1,5 @@
 import json
+import csv
 import sys
 import typing
 from collections import deque
@@ -11,23 +12,30 @@ FORMAT_CSV = 'csv'
 FORMAT_JL = 'jl'
 
 
-def start(start_url: str, callback: typing.Callable, out_path: str, out_format: str):
-    start_task = (start_url, callback)
-    tasks = deque([start_task])
+def start(start_urls: typing.List, callback: typing.Callable, out_path: str, out_format: str):
+    start_tasks = [(start_url, callback) for start_url in start_urls]
+    tasks = deque(start_tasks)
 
-    out_file = sys.stdout if out_path == SIGN_STDOUT else open(out_path, 'w', buffering=1)
-    if out_format == FORMAT_CSV:
-        raise NotImplementedError('this is home work')
+    if out_path == SIGN_STDOUT:
+        out_file = sys.stdout
+    else:
+        out_file = open(out_path, 'w', buffering=1)
 
     try:
+        with_header = True
         while tasks:
             url, callback = tasks.popleft()
-            print(url)
             resp = requests.get(url)
 
             for result in callback(resp):
                 if isinstance(result, dict):
-                    _write_jl(result, out_file)
+                    result['url'] = url
+                    if out_format == FORMAT_CSV:
+                        _write_csv(result, out_file, with_header=with_header)
+                        if with_header:
+                            with_header = False
+                    else:
+                        _write_jl(result, out_file)
                 else:
                     tasks.append(result)
     finally:
@@ -37,3 +45,10 @@ def start(start_url: str, callback: typing.Callable, out_path: str, out_format: 
 def _write_jl(row, out_file):
     json.dump(row, out_file)
     out_file.write('\n')
+
+
+def _write_csv(row, out_file, with_header=False):
+    writer = csv.DictWriter(out_file, delimiter=',', fieldnames=row.keys())
+    if with_header:
+        writer.writeheader()
+    writer.writerow(row)
