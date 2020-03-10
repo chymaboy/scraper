@@ -23,3 +23,4 @@ python -m scraper crawl [options]
 &nbsp;&nbsp;&nbsp;&nbsp;Supported options:
   - ```--outfile=FILE``` or ```-o FILE```: файл, в который будут сохранены собранные данные
   - ```--format=FORMAT``` or ```-f FORMAT```: формат файла с собранными данными {csv, jl}
+  - ```--spider=SPIDER``` or ```-s SPIDER```: желаемый спайдер {cfm, fifa}

@@ -11,6 +11,7 @@ def parse():
     parser_crawl = subparsers.add_parser('crawl')
     parser_crawl.add_argument('-o', '--outfile', metavar='FILE', default=SIGN_STDOUT)
     parser_crawl.add_argument('-f', '--format', default=FORMAT_CSV, choices=[FORMAT_CSV, FORMAT_JL])
+    parser_crawl.add_argument('-s', '--spider', default='cfm', choices=['cfm', 'fifa'])
     parser_crawl.set_defaults(func=crawl.execute)
 
     args = parser.parse_args()

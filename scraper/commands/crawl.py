@@ -3,7 +3,11 @@ from scraper.spiders import fifa, cfm
 
 
 def execute(args):
-    # engine.start([fifa.START_URL], fifa.parse, args.outfile, args.format)
-    cfm_urls = [cfm.BASE_URL + f'?p={i}' for i in range(1, 11)]
-    engine.start(cfm_urls, cfm.parse, args.outfile, args.format)
+    if args.spider == 'cfm':
+        engine_urls = [cfm.BASE_URL + f'?p={i}' for i in range(1, 11)]
+        engine_func = cfm.parse
+    elif args.spider == 'fifa':
+        engine_urls = [fifa.START_URL]
+        engine_func = fifa.parse
 
+    engine.start(engine_urls, engine_func, args.outfile, args.format)
