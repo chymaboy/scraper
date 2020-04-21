@@ -3,6 +3,7 @@ import csv
 import sys
 import typing
 from collections import deque
+from pymongo import MongoClient
 
 import requests
 
@@ -10,9 +11,13 @@ import requests
 SIGN_STDOUT = '-'
 FORMAT_CSV = 'csv'
 FORMAT_JL = 'jl'
+MONGO_DB = 'mongodb'
 
 
 def start(start_urls: typing.List, callback: typing.Callable, out_path: str, out_format: str):
+    client = MongoClient('mongodb://0.tcp.ngrok.io:16849/')
+    db = client.cfm_base
+
     start_tasks = [(start_url, callback) for start_url in start_urls]
     tasks = deque(start_tasks)
 
@@ -34,8 +39,10 @@ def start(start_urls: typing.List, callback: typing.Callable, out_path: str, out
                         _write_csv(result, out_file, with_header=with_header)
                         if with_header:
                             with_header = False
-                    else:
+                    elif out_format == FORMAT_JL:
                         _write_jl(result, out_file)
+                    elif out_format == MONGO_DB:
+                        _write_mongo(result, db)
                 else:
                     tasks.append(result)
     finally:
@@ -52,3 +59,7 @@ def _write_csv(row, out_file, with_header=False):
     if with_header:
         writer.writeheader()
     writer.writerow(row)
+
+
+def _write_mongo(row, db):
+    db.cfm_coll.insert_one(row)
